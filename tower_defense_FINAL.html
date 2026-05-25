@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Neo-Cali Defense</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#03060e;font-family:'Share Tech Mono',monospace;color:#b8d4ee;display:flex;flex-direction:column;align-items:center;padding:10px;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% -20%,rgba(0,80,150,0.15),transparent 70%),radial-gradient(ellipse at 80% 110%,rgba(120,0,200,0.08),transparent 60%);pointer-events:none;z-index:0}
+
+  .hdr{width:100%;max-width:980px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1a3a5c;padding-bottom:8px;margin-bottom:8px;position:relative;z-index:1}
+  .hdr h1{font-family:'Orbitron',sans-serif;font-size:19px;font-weight:900;color:#00d4ff;text-shadow:0 0 30px #00d4ff,0 0 60px rgba(0,212,255,0.2);letter-spacing:4px}
+  .hdr-sub{font-size:8px;color:#3a5a7a;letter-spacing:3px;margin-top:3px}
+  .hdr-r{font-size:8px;color:#3a6a5a;text-align:right;line-height:1.9;letter-spacing:1px}
+
+  .stats{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;width:100%;max-width:980px;margin-bottom:8px;position:relative;z-index:1}
+  .sb{background:#070e1c;border:1px solid #12253a;border-radius:3px;padding:4px 14px;text-align:center;min-width:72px}
+  .sb .sl{font-size:8px;color:#2a5a7a;letter-spacing:1px;text-transform:uppercase}
+  .sb .sv{font-family:'Orbitron',sans-serif;font-size:15px;font-weight:700;color:#00d4ff;display:block;margin-top:1px}
+  .sb.sd .sv{color:#ff2244} .sb.sg .sv{color:#ffd700} .sb.sp .sv{color:#c084fc}
+
+  /* Nivel badge */
+  .lvl-badge{background:#060d1a;border:1px solid #2a5a3a;border-radius:3px;padding:4px 14px;text-align:center;min-width:72px}
+  .lvl-badge .sl{font-size:8px;color:#2a7a4a;letter-spacing:1px;text-transform:uppercase}
+  .lvl-badge .sv{font-family:'Orbitron',sans-serif;font-size:15px;font-weight:700;color:#00ff88;display:block;margin-top:1px}
+
+  .wrap{display:flex;gap:10px;width:100%;max-width:980px;position:relative;z-index:1;align-items:flex-start}
+
+  #cw{position:relative;flex-shrink:0}
+  canvas{display:block;border:1px solid #1a3a5c;border-radius:4px;cursor:crosshair}
+
+  /* Overlay genérico */
+  #ov{position:absolute;inset:0;background:rgba(3,6,14,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border-radius:4px;z-index:10}
+  #ov .ot{font-family:'Orbitron',sans-serif;font-size:21px;font-weight:900;color:#00d4ff;text-shadow:0 0 30px #00d4ff;letter-spacing:4px}
+  #ov .os{font-size:9px;color:#3a7a9a;letter-spacing:2px;text-align:center}
+  #ov .ostory{font-size:10px;color:#7a9aaa;max-width:380px;text-align:center;line-height:1.9;border:1px solid #122030;padding:10px 16px;border-radius:3px;background:#060d1a}
+  .kw{color:#00d4ff} .hi{color:#b8d4ee}
+
+  /* Pausa overlay */
+  #pauseov{position:absolute;inset:0;background:rgba(3,6,14,0.82);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;border-radius:4px;z-index:10}
+  #pauseov .pt{font-family:'Orbitron',sans-serif;font-size:28px;font-weight:900;color:#ffd700;text-shadow:0 0 30px #ffd700;letter-spacing:6px}
+  #pauseov .ps{font-size:10px;color:#3a5a7a;letter-spacing:2px}
+
+  /* Sidebar */
+  .side{display:flex;flex-direction:column;gap:6px;min-width:165px;max-width:180px}
+  .slbl{font-size:8px;color:#2a5a7a;text-transform:uppercase;letter-spacing:2px;border-bottom:1px solid #0e2030;padding-bottom:3px}
+
+  .tbtn{background:#060d1a;border:1px solid #0e2030;border-radius:3px;padding:8px 10px;cursor:pointer;text-align:left;font-family:'Share Tech Mono',monospace;color:#b8d4ee;font-size:10px;transition:all .12s;width:100%}
+  .tbtn:hover{border-color:#1a3a5c;background:#090f1e}
+  .tbtn.sel{border-color:#00d4ff;background:#090f1e;box-shadow:inset 0 0 14px rgba(0,212,255,0.05)}
+  .tbtn .tn{font-family:'Orbitron',sans-serif;font-size:9px;font-weight:700;margin-bottom:4px}
+  .tbtn .tc{color:#ffd700;font-size:9px}
+  .tbtn .ts{color:#2a5a7a;font-size:8px;margin-top:2px}
+
+  .cbtn{background:#060d1a;border:1px solid #0e2030;border-radius:3px;padding:6px 10px;cursor:pointer;font-family:'Share Tech Mono',monospace;color:#b8d4ee;font-size:10px;letter-spacing:1px;transition:all .12s;width:100%;text-align:center}
+  .cbtn:hover{background:#090f1e}
+  .cbtn.go{border-color:#1a5a3a;color:#00ff88} .cbtn.go:hover{background:#061408}
+  .cbtn.dr{border-color:#5a1a2a;color:#ff2244}
+  .cbtn.pa{border-color:#5a4a1a;color:#ffd700} .cbtn.pa:hover{background:#1a1208}
+
+  /* Botones de control en fila */
+  .ctrl-row{display:flex;gap:5px;margin-top:2px}
+
+  #log{background:#040810;border:1px solid #0e2030;border-radius:3px;padding:6px;font-size:9px;color:#2a5a7a;max-height:110px;overflow-y:auto;line-height:1.9}
+  .le{display:block}.ok{color:#00c060}.wa{color:#ffd700}.er{color:#ff2244}.inf{color:#00d4ff}.bs{color:#c084fc;font-weight:bold}
+  ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:#040810}::-webkit-scrollbar-thumb{background:#1a3a5c;border-radius:2px}
+
+  .tipbar{background:#040810;border:1px solid #0e2030;border-radius:3px;padding:5px 10px;font-size:9px;color:#2a5a7a;line-height:1.7}
+
+  /* Level select pantalla */
+  .lvl-cards{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+  .lvl-card{background:#060d1a;border:1px solid #1a3a5c;border-radius:6px;padding:14px 20px;cursor:pointer;text-align:center;min-width:150px;transition:all .15s}
+  .lvl-card:hover{border-color:#00d4ff;background:#090f1e;transform:translateY(-2px)}
+  .lvl-card .lc-num{font-family:'Orbitron',sans-serif;font-size:28px;font-weight:900;color:#00d4ff}
+  .lvl-card .lc-name{font-family:'Orbitron',sans-serif;font-size:10px;color:#00ff88;margin:4px 0;letter-spacing:2px}
+  .lvl-card .lc-desc{font-size:9px;color:#3a5a7a;line-height:1.7}
+  .lvl-card.locked{opacity:0.4;cursor:not-allowed}
+  .lvl-card.locked:hover{transform:none;border-color:#1a3a5c}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <h1>◈ NEO-CALI DEFENSE</h1>
+    <div class="hdr-sub" id="hdr-sub">AÑO 2089 · OPERACIÓN NODO MUERTO · FORTALEZA GRID</div>
+  </div>
+  <div class="hdr-r">ARIA v2.1 · COLECTIVO LIBRE<br>vs. OMNICORP S.A.<br><span style="color:#ff2244">⚠ INVASIÓN ACTIVA</span></div>
+</div>
+
+<div class="stats">
+  <div class="lvl-badge"><div class="sl">Nivel</div><span class="sv" id="s-level">—</span></div>
+  <div class="sb sg"><div class="sl">Créditos</div><span class="sv" id="s-gold">200</span></div>
+  <div class="sb sd"><div class="sl">Vida Grid</div><span class="sv" id="s-lives">20</span></div>
+  <div class="sb"><div class="sl">Oleada</div><span class="sv" id="s-wave">0</span></div>
+  <div class="sb"><div class="sl">Enemigos</div><span class="sv" id="s-enemies">0</span></div>
+  <div class="sb sp"><div class="sl">Score</div><span class="sv" id="s-score">0</span></div>
+</div>
+
+<div class="wrap">
+  <div id="cw">
+    <canvas id="gc" width="700" height="440"></canvas>
+
+    <!-- Overlay principal (intro / level select) -->
+    <div id="ov">
+      <div class="ot">◈ NEO-CALI DEFENSE</div>
+      <div class="os">SELECCIONA ZONA DE COMBATE</div>
+      <div class="lvl-cards" id="lvl-cards">
+        <div class="lvl-card" onclick="loadLevel(0)">
+          <div class="lc-num">01</div>
+          <div class="lc-name">SECTOR NORTE</div>
+          <div class="lc-desc">Calles lineales de Neo-Cali.<br>3 oleadas · Dificultad: Media<br>DronScouts + Corredores</div>
+        </div>
+        <div class="lvl-card" id="lvl2card" onclick="loadLevel(1)">
+          <div class="lc-num">02</div>
+          <div class="lc-name">NÚCLEO CORP</div>
+          <div class="lc-desc">Corazón de OmniCorp.<br>5 oleadas · Dificultad: Alta<br>TanquesMech + JefeCorp</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlay de pausa -->
+    <div id="pauseov">
+      <div class="pt">II PAUSA</div>
+      <div class="ps">SISTEMA EN ESPERA</div>
+      <button class="cbtn go" onclick="togglePause()" style="width:180px;padding:8px;font-size:11px;letter-spacing:2px">▶ CONTINUAR</button>
+      <button class="cbtn pa" onclick="restartLevel()" style="width:180px;padding:8px;font-size:11px;letter-spacing:2px">↺ REINICIAR NIVEL</button>
+      <button class="cbtn" onclick="goMenu()" style="width:180px;padding:8px;font-size:11px;letter-spacing:2px;border-color:#1a2a3a">⬡ MENÚ PRINCIPAL</button>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="slbl">// Torres</div>
+    <button class="tbtn sel" id="tb0" onclick="sel(0)">
+      <div class="tn" style="color:#00d4ff">◆ RAILGUN</div>
+      <div class="tc">50 créditos</div>
+      <div class="ts">DMG:20 · RNG:80 · CD:60f</div>
+    </button>
+    <button class="tbtn" id="tb1" onclick="sel(1)">
+      <div class="tn" style="color:#ff8c42">◈ LASER</div>
+      <div class="tc">100 créditos</div>
+      <div class="ts">DMG:60 · RNG:160 · CD:120f</div>
+    </button>
+    <button class="tbtn" id="tb2" onclick="sel(2)">
+      <div class="tn" style="color:#ff2244">▲ DRONE</div>
+      <div class="tc">80 créditos</div>
+      <div class="ts">DMG:15 · RNG:70 · CD:30f</div>
+    </button>
+    <button class="tbtn" id="tb3" onclick="sel(3)">
+      <div class="tn" style="color:#c084fc">★ HACK</div>
+      <div class="tc">90 créditos</div>
+      <div class="ts">SLOW:50% · Revela fantasmas</div>
+    </button>
+
+    <div class="ctrl-row">
+      <button class="cbtn go" id="bw" onclick="sendWave()" style="display:none;flex:1">⚡ OLEADA</button>
+      <button class="cbtn dr" onclick="sellMode()" style="flex:1">💰 VENDER</button>
+    </div>
+
+    <div class="ctrl-row">
+      <button class="cbtn pa" onclick="togglePause()" id="btn-pause" style="flex:1;display:none">⏸ PAUSA</button>
+      <button class="cbtn" onclick="restartLevel()" id="btn-restart" style="flex:1;display:none;border-color:#1a3a5c">↺</button>
+    </div>
+
+    <div class="tipbar">
+      Clic en torre puesta = MEJORAR<br>Clic derecho = upgrade rápido<br><span style="color:#ffd700">⏸ Espacio = Pausa</span>
+    </div>
+
+    <div class="slbl">// Log ARIA</div>
+    <div id="log">
+      <span class="le inf">&gt; ARIA online</span>
+      <span class="le wa">&gt; Selecciona zona de combate</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DEFINICIÓN DE NIVELES
+// ═══════════════════════════════════════════════════════════
+const LEVELS = [
+  {
+    // NIVEL 1 — SECTOR NORTE: Calles rectas de la ciudad
+    id: 0,
+    name: 'SECTOR NORTE',
+    subtitle: 'Calles de Neo-Cali · Zona periférica',
+    cols: 17, rows: 11,
+    startGold: 200, startLives: 20,
+    totalWaves: 3,
+    // Ruta: horizontal, luego baja, horizontal, luego sube, termina
+    path: [
+      [0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[6,2],[7,2],[8,2],
+      [8,3],[8,4],[8,5],[8,6],[8,7],
+      [9,7],[10,7],[11,7],[12,7],[13,7],[14,7],
+      [14,6],[14,5],[14,4],[14,3],[14,2],
+      [15,2],[16,2]
+    ],
+    bgType: 'city',      // fondo de ciudad cyberpunk
+    accentColor: '#00d4ff',
+    intro: '<span class="kw">SECTOR NORTE</span> — Los DronScouts de OmniCorp avanzan por las calles perimetrales de Neo-Cali. Establece defensas en los cruces clave para detener la infiltración inicial.'
+  },
+  {
+    // NIVEL 2 — NÚCLEO CORP: Interior del edificio OmniCorp, ruta más compleja (estilo Kingdom Rush nivel 2)
+    id: 1,
+    name: 'NÚCLEO CORP',
+    subtitle: 'Torre Central OmniCorp · Zona de alto riesgo',
+    cols: 17, rows: 11,
+    startGold: 250, startLives: 15,
+    totalWaves: 5,
+    // Ruta en zigzag complejo: entra por izquierda, serpentea, termina abajo derecha
+    path: [
+      [0,1],[1,1],[2,1],[3,1],[4,1],
+      [4,2],[4,3],[4,4],[4,5],
+      [5,5],[6,5],[7,5],[8,5],
+      [8,4],[8,3],[8,2],[8,1],
+      [9,1],[10,1],[11,1],[12,1],
+      [12,2],[12,3],[12,4],[12,5],[12,6],[12,7],[12,8],
+      [11,8],[10,8],[9,8],[8,8],[7,8],[6,8],[5,8],
+      [5,9],[5,10],[6,10],[7,10],[8,10],[9,10],[10,10],[11,10],[12,10],[13,10],[14,10],[15,10],[16,10]
+    ],
+    bgType: 'corp',      // interior corporativo — rojo/negro
+    accentColor: '#ff2244',
+    intro: '<span class="kw">NÚCLEO CORP</span> — Has penetrado la Torre Central de OmniCorp. Las unidades de élite defienden el núcleo del servidor: TanquesMech blindados, Fantasmas con camuflaje y el propio <span class="kw">JefeCorp</span>. Derrótalo para liberar la red.'
+  }
+];
+
+// ═══════════════════════════════════════════════════════════
+// DEFINICIONES DE TORRES Y ENEMIGOS
+// ═══════════════════════════════════════════════════════════
+const TD=[
+  {name:'TorreRailgun',color:'#00d4ff',cost:50, dmg:20,range:80, cd:60, slow:0,  upgC:60, icon:0},
+  {name:'TorreLaser',  color:'#ff8c42',cost:100,dmg:60,range:160,cd:120,slow:0,  upgC:100,icon:1},
+  {name:'TorreDrone',  color:'#ff2244',cost:80, dmg:15,range:70, cd:30, slow:0,  upgC:80, icon:2},
+  {name:'TorreHack',   color:'#c084fc',cost:90, dmg:5, range:90, cd:80, slow:0.5,upgC:90, icon:3}
+];
+
+const ED=[
+  {name:'DronScout', hp:80,  spd:0.75,color:'#00ff88',reward:10, sz:8,  ghost:false,boss:false,type:0},
+  {name:'Corredor',  hp:50,  spd:1.55,color:'#ffd700',reward:15, sz:7,  ghost:false,boss:false,type:1},
+  {name:'TanqueMech',hp:350, spd:0.38,color:'#ff5555',reward:30, sz:12, ghost:false,boss:false,type:2},
+  {name:'Fantasma',  hp:130, spd:0.95,color:'#c084fc',reward:25, sz:8,  ghost:true, boss:false,type:3},
+  {name:'JefeCorp',  hp:1400,spd:0.28,color:'#ff0066',reward:200,sz:15, ghost:false,boss:true, type:4}
+];
+
+// ═══════════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ═══════════════════════════════════════════════════════════
+const canvas=document.getElementById('gc');
+const ctx=canvas.getContext('2d');
+
+let CURRENT_LEVEL = null;
+let PSET = new Set();
+let UNLOCKED = 1; // nivel 2 bloqueado al inicio
+
+let G={
+  lives:20,gold:200,wave:0,score:0,totalScore:0,
+  towers:[],enemies:[],projs:[],parts:[],
+  frame:0,running:false,waveActive:false,paused:false,
+  spawnQ:[],spawnT:0,sellOn:false,hackOn:false,bossWon:false
+};
+
+// ═══════════════════════════════════════════════════════════
+// SISTEMA DE NIVELES
+// ═══════════════════════════════════════════════════════════
+function loadLevel(idx){
+  if(idx > UNLOCKED){ log('Completa el nivel anterior primero','er'); return; }
+  CURRENT_LEVEL = LEVELS[idx];
+  PSET = new Set(CURRENT_LEVEL.path.map(([c,r])=>r*CURRENT_LEVEL.cols+c));
+
+  G = {
+    lives: CURRENT_LEVEL.startLives,
+    gold: CURRENT_LEVEL.startGold,
+    wave:0, score:0,
+    towers:[], enemies:[], projs:[], parts:[],
+    frame:0, running:true, waveActive:false, paused:false,
+    spawnQ:[], spawnT:0, sellOn:false, hackOn:false, bossWon:false
+  };
+
+  document.getElementById('ov').style.display='none';
+  document.getElementById('pauseov').style.display='none';
+  document.getElementById('bw').style.display='block';
+  document.getElementById('btn-pause').style.display='block';
+  document.getElementById('btn-restart').style.display='block';
+  document.getElementById('s-level').textContent = '0' + (idx+1);
+  document.getElementById('hdr-sub').textContent = CURRENT_LEVEL.subtitle.toUpperCase();
+
+  log(`Nivel ${idx+1}: ${CURRENT_LEVEL.name} cargado`,'inf');
+  log('Despliega torres y lanza la primera oleada','inf');
+  upStats();
+  if(!loopRunning){ loopRunning=true; gameLoop(); }
+}
+
+function restartLevel(){
+  if(!CURRENT_LEVEL) return;
+  loadLevel(CURRENT_LEVEL.id);
+  log('Nivel reiniciado','wa');
+}
+
+function goMenu(){
+  G.running=false; G.paused=false;
+  document.getElementById('pauseov').style.display='none';
+  document.getElementById('btn-pause').style.display='none';
+  document.getElementById('btn-restart').style.display='none';
+  document.getElementById('bw').style.display='none';
+  showMenu();
+}
+
+function showMenu(){
+  const ov=document.getElementById('ov');
+  // Actualiza estado de nivel 2
+  const c2=document.getElementById('lvl2card');
+  if(UNLOCKED>=1) c2.classList.remove('locked');
+  else c2.classList.add('locked');
+
+  ov.innerHTML=`
+    <div class="ot">◈ NEO-CALI DEFENSE</div>
+    <div class="os">SELECCIONA ZONA DE COMBATE${G.totalScore?` · SCORE TOTAL: ${G.totalScore}`:''}</div>
+    <div class="lvl-cards">
+      <div class="lvl-card" onclick="loadLevel(0)">
+        <div class="lc-num">01</div>
+        <div class="lc-name">SECTOR NORTE</div>
+        <div class="lc-desc">Calles lineales de Neo-Cali.<br>3 oleadas · Dificultad: Media<br>DronScouts + Corredores</div>
+      </div>
+      <div class="lvl-card ${UNLOCKED<1?'locked':''}" onclick="${UNLOCKED>=1?'loadLevel(1)':''}">
+        <div class="lc-num">${UNLOCKED<1?'🔒':'02'}</div>
+        <div class="lc-name">NÚCLEO CORP</div>
+        <div class="lc-desc">Corazón de OmniCorp.<br>5 oleadas · Dificultad: Alta<br>TanquesMech + JefeCorp</div>
+      </div>
+    </div>`;
+  ov.style.display='flex';
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAUSA
+// ═══════════════════════════════════════════════════════════
+function togglePause(){
+  if(!G.running) return;
+  G.paused=!G.paused;
+  const pov=document.getElementById('pauseov');
+  const pb=document.getElementById('btn-pause');
+  pov.style.display=G.paused?'flex':'none';
+  pb.textContent=G.paused?'▶ REANUDAR':'⏸ PAUSA';
+  if(!G.paused) gameLoop();
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'){ e.preventDefault(); togglePause(); }
+});
+
+// ═══════════════════════════════════════════════════════════
+// CLASES POO
+// ═══════════════════════════════════════════════════════════
+class Entity{
+  constructor(x,y){this.x=x;this.y=y;this.alive=true}
+  dist(o){return Math.hypot(this.x-o.x,this.y-o.y)}
+}
+
+class Tower extends Entity{
+  constructor(col,row,ti){
+    const d=TD[ti];
+    super(col*40+20,row*40+20);
+    Object.assign(this,JSON.parse(JSON.stringify(d)));
+    this.col=col;this.row=row;this.ti=ti;
+    this.timer=0;this.atk=0;this.lv=1;this.angle=0;
+  }
+  upgrade(){
+    if(this.lv>=3){log('Nivel máximo alcanzado','wa');return}
+    if(G.gold<this.upgC){log(`Faltan ${this.upgC-G.gold}C`,'er');return}
+    G.gold-=this.upgC;
+    this.dmg=Math.round(this.dmg*1.5);
+    this.range=Math.round(this.range*1.15);
+    this.cd=Math.max(15,Math.round(this.cd*0.85));
+    this.lv++;
+    log(`${this.name} → Nv${this.lv}`,'ok');
+    spawnP(this.x,this.y,this.color,6);
+  }
+  update(){
+    this.timer++;
+    if(this.atk>0)this.atk--;
+    if(this.ti===3){
+      G.hackOn=true;
+      G.enemies.forEach(e=>{if(e.ghost&&this.dist(e)<=this.range*1.6)e.revealed=true});
+    }
+    if(this.timer>=this.cd){
+      const t=G.enemies.find(e=>{
+        if(!e.alive)return false;
+        if(e.ghost&&!e.revealed&&!G.hackOn)return false;
+        return this.dist(e)<=this.range;
+      });
+      if(t){
+        G.projs.push(new Proj(this.x,this.y,t,this.dmg,this.color,this.slow));
+        this.timer=0;this.atk=12;
+        this.angle=Math.atan2(t.y-this.y,t.x-this.x);
+        spawnP(this.x,this.y,this.color,2);
+      }
+    }
+  }
+  render(){
+    const{x,y,color,lv,ti,atk,angle,range}=this;
+    ctx.save();
+    ctx.globalAlpha=0.04+(atk>0?0.02:0);
+    ctx.fillStyle=color;
+    ctx.beginPath();ctx.arc(x,y,range,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;
+    ctx.fillStyle='#0a1828';
+    roundRect(ctx,x-16,y-16,32,32,3);ctx.fill();
+    ctx.shadowBlur=atk>0?20:8;ctx.shadowColor=color;
+    ctx.strokeStyle=color;ctx.lineWidth=atk>0?2.5:1.2;
+    roundRect(ctx,x-16,y-16,32,32,3);ctx.stroke();
+    ctx.shadowBlur=0;
+    ctx.save();ctx.translate(x,y);
+    if(ti===0)drawRailgun(ctx,color,angle,lv);
+    else if(ti===1)drawLaser(ctx,color,angle,lv);
+    else if(ti===2)drawDrone(ctx,color,lv);
+    else drawHack(ctx,color,lv);
+    ctx.restore();
+    if(lv>1){
+      ctx.fillStyle='#ffd700';ctx.font='bold 8px Share Tech Mono';
+      ctx.textAlign='right';ctx.textBaseline='top';
+      ctx.fillText('★'+lv,x+14,y-15);
+    }
+    ctx.restore();
+  }
+}
+
+class Enemy extends Entity{
+  constructor(ti){
+    super(0,0);
+    const d=ED[ti];
+    Object.assign(this,JSON.parse(JSON.stringify(d)));
+    this.maxhp=this.hp;this.t=0;this.slowT=0;this.basespd=this.spd;
+    this.revealed=false;this.angle=0;this.prevx=0;this.prevy=0;
+    if(this.boss){this.shield=500;this.maxshield=500}
+  }
+  takeDamage(d,slow=0){
+    if(this.boss&&this.shield>0){
+      const ab=Math.min(d,this.shield);
+      this.shield-=ab;d-=ab;
+      if(this.shield<=0)log('¡Escudo JefeCorp destruido!','bs');
+    }
+    if(d<=0)return;
+    this.hp-=d;
+    if(slow>0){this.slowT=80;this.spd=this.basespd*(1-slow)}
+    if(this.hp<=0){
+      this.alive=false;
+      G.gold+=this.reward;G.score+=this.reward*5;
+      spawnP(this.x,this.y,this.color,this.boss?20:6);
+      if(this.boss){G.bossWon=true;log('¡¡JefeCorp DERROTADO!! Neo-Cali es LIBRE','bs')}
+      else log(`${this.name} eliminado +${this.reward}C`,'wa');
+    }
+  }
+  update(){
+    if(this.slowT>0){this.slowT--;if(this.slowT===0)this.spd=this.basespd}
+    if(this.boss&&this.shield<this.maxshield&&G.frame%90===0)this.shield=Math.min(this.maxshield,this.shield+15);
+    this.prevx=this.x;this.prevy=this.y;
+    this.t+=this.spd*0.025;
+    const p=pathPos(this.t);
+    if(!p){
+      this.alive=false;
+      G.lives=Math.max(0,G.lives-(this.boss?5:1));
+      log(`${this.name} alcanzó el GRID${this.boss?' (-5 vida)':''}`,'er');
+      return;
+    }
+    if(p.x!==this.x||p.y!==this.y)this.angle=Math.atan2(p.y-this.prevy,p.x-this.prevx);
+    this.x=p.x;this.y=p.y;
+  }
+  render(){
+    const hidden=this.ghost&&!this.revealed&&!G.hackOn;
+    if(hidden){
+      ctx.save();ctx.globalAlpha=0.15;
+      ctx.fillStyle=this.color;
+      ctx.beginPath();ctx.arc(this.x,this.y,this.sz,0,Math.PI*2);ctx.fill();
+      ctx.restore();return;
+    }
+    const fr=this.slowT>0;
+    ctx.save();
+    const col=fr?'#a0d4ff':this.color;
+    ctx.shadowBlur=this.boss?22:10;ctx.shadowColor=col;
+    ctx.save();ctx.translate(this.x,this.y);ctx.rotate(this.angle);
+    if(this.type===0)drawDronScout(ctx,col,this.sz);
+    else if(this.type===1)drawCorredor(ctx,col,this.sz);
+    else if(this.type===2)drawTanque(ctx,col,this.sz);
+    else if(this.type===3)drawFantasma(ctx,col,this.sz);
+    else drawJefeCorp(ctx,col,this.sz);
+    ctx.restore();
+    ctx.shadowBlur=0;
+    const bw=this.sz*2+8,bh=3,bx=this.x-bw/2,by=this.y-this.sz-11;
+    ctx.fillStyle='#0a1020';ctx.fillRect(bx,by,bw,bh);
+    ctx.fillStyle=this.hp/this.maxhp>0.5?'#00e060':'#ff2244';
+    ctx.fillRect(bx,by,bw*(this.hp/this.maxhp),bh);
+    if(this.boss){
+      ctx.fillStyle='#0a1030';ctx.fillRect(bx,by-5,bw,3);
+      ctx.fillStyle='#4488ff';ctx.fillRect(bx,by-5,bw*(this.shield/this.maxshield),3);
+    }
+    ctx.restore();
+  }
+}
+
+class Proj extends Entity{
+  constructor(x,y,target,dmg,color,slow){
+    super(x,y);
+    this.target=target;this.dmg=dmg;this.color=color;this.slow=slow;this.spd=6;
+    this.trail=[];
+  }
+  update(){
+    if(!this.target.alive){this.alive=false;return}
+    const dx=this.target.x-this.x,dy=this.target.y-this.y,d=Math.hypot(dx,dy);
+    this.trail.push({x:this.x,y:this.y});
+    if(this.trail.length>6)this.trail.shift();
+    if(d<7){this.target.takeDamage(this.dmg,this.slow);this.alive=false;return}
+    this.x+=dx/d*this.spd;this.y+=dy/d*this.spd;
+  }
+  render(){
+    this.trail.forEach((p,i)=>{
+      ctx.save();ctx.globalAlpha=(i/this.trail.length)*0.4;
+      ctx.fillStyle=this.color;
+      ctx.beginPath();ctx.arc(p.x,p.y,2*(i/this.trail.length+0.2),0,Math.PI*2);ctx.fill();
+      ctx.restore();
+    });
+    ctx.save();
+    ctx.shadowBlur=10;ctx.shadowColor=this.color;
+    ctx.fillStyle=this.color;
+    ctx.beginPath();ctx.arc(this.x,this.y,3.5,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+}
+
+class Part{
+  constructor(x,y,color){
+    this.x=x;this.y=y;this.color=color;
+    this.vx=(Math.random()-0.5)*5;this.vy=(Math.random()-0.5)*5;
+    this.life=25+Math.random()*20;this.maxl=this.life;this.r=1+Math.random()*2;
+  }
+  update(){this.x+=this.vx;this.y+=this.vy;this.vx*=0.9;this.vy*=0.9;this.life--}
+  render(){
+    ctx.save();ctx.globalAlpha=this.life/this.maxl;
+    ctx.fillStyle=this.color;
+    ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+}
+
+function spawnP(x,y,color,n=5){for(let i=0;i<n;i++)G.parts.push(new Part(x,y,color))}
+
+// ═══════════════════════════════════════════════════════════
+// SPRITES TORRES
+// ═══════════════════════════════════════════════════════════
+function drawRailgun(ctx,color,angle,lv){
+  ctx.fillStyle='#0e1e34';ctx.fillRect(-11,-11,22,22);
+  ctx.fillStyle=color+'44';ctx.fillRect(-9,-9,18,18);
+  ctx.fillStyle=color;ctx.fillRect(-9,-9,18,2);ctx.fillRect(-9,7,18,2);
+  ctx.save();ctx.rotate(angle);
+  ctx.fillStyle='#8ab8d8';ctx.fillRect(0,-2,14+lv*2,4);
+  ctx.fillStyle=color;ctx.fillRect(10+lv*2,-3,4+lv,6);
+  ctx.restore();
+  ctx.fillStyle=color;ctx.beginPath();ctx.arc(0,0,4,0,Math.PI*2);ctx.fill();
+}
+function drawLaser(ctx,color,angle,lv){
+  ctx.fillStyle='#1a0e0e';octagon(ctx,0,0,13);ctx.fill();
+  ctx.strokeStyle=color;ctx.lineWidth=1.2;octagon(ctx,0,0,13);ctx.stroke();
+  ctx.fillStyle='#ff8c42';ctx.beginPath();ctx.arc(0,0,5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff8';ctx.beginPath();ctx.arc(-1,-1,2,0,Math.PI*2);ctx.fill();
+  ctx.save();ctx.rotate(angle);
+  ctx.fillStyle='#c06030';ctx.fillRect(2,-2,16+lv*2,4);
+  ctx.fillStyle='#ffaa00';ctx.beginPath();ctx.arc(18+lv*2,0,3,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle=color+'66';ctx.lineWidth=0.8;
+  ctx.beginPath();ctx.arc(0,0,9,0,Math.PI*2);ctx.stroke();
+}
+function drawDrone(ctx,color,lv){
+  for(let i=0;i<4;i++){
+    ctx.save();ctx.rotate(i*Math.PI/2+G.frame*0.15);
+    ctx.fillStyle=color+'55';ctx.beginPath();ctx.ellipse(8,0,7,3,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=color+'33';ctx.beginPath();ctx.ellipse(-8,0,7,3,0,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+  ctx.fillStyle='#1a0808';ctx.beginPath();ctx.arc(0,0,7,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle=color;ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(0,0,7,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle=G.frame%20<10?'#ff4444':'#ff8888';ctx.beginPath();ctx.arc(0,0,3,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle=color+'88';ctx.lineWidth=1;
+  for(let i=0;i<4;i++){ctx.save();ctx.rotate(i*Math.PI/2+Math.PI/4);ctx.beginPath();ctx.moveTo(5,0);ctx.lineTo(9,0);ctx.stroke();ctx.restore()}
+}
+function drawHack(ctx,color,lv){
+  ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-13);ctx.stroke();
+  const pulse=(G.frame%60)/60;
+  for(let i=0;i<3;i++){
+    const r=6+(i+pulse)*5;
+    ctx.strokeStyle=color+''+Math.floor((1-(r/22))*99).toString(16).padStart(2,'0');
+    ctx.lineWidth=0.8;ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.stroke();
+  }
+  ctx.fillStyle='#0e081a';hex(ctx,0,0,10);ctx.fill();
+  ctx.strokeStyle=color;ctx.lineWidth=1.2;hex(ctx,0,0,10);ctx.stroke();
+  ctx.fillStyle=color;ctx.beginPath();ctx.arc(0,0,4,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#00ff88';ctx.beginPath();ctx.arc(-1,-1,1.5,0,Math.PI*2);ctx.fill();
+}
+
+// ═══════════════════════════════════════════════════════════
+// SPRITES ENEMIGOS
+// ═══════════════════════════════════════════════════════════
+function drawDronScout(ctx,col,sz){
+  ctx.fillStyle='#08180a';hex(ctx,0,0,sz);ctx.fill();
+  ctx.strokeStyle=col;ctx.lineWidth=1.2;hex(ctx,0,0,sz);ctx.stroke();
+  ctx.save();ctx.rotate(G.frame*0.2);
+  ctx.strokeStyle=col+'66';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(-sz,0);ctx.lineTo(sz,0);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(0,-sz);ctx.lineTo(0,sz);ctx.stroke();
+  ctx.restore();
+  ctx.fillStyle=col;ctx.beginPath();ctx.arc(0,0,3,0,Math.PI*2);ctx.fill();
+}
+function drawCorredor(ctx,col,sz){
+  ctx.fillStyle='#1a140a';ctx.fillRect(-sz/2,-sz,sz,sz*1.5);
+  ctx.strokeStyle=col;ctx.lineWidth=1;ctx.strokeRect(-sz/2,-sz,sz,sz*1.5);
+  ctx.fillStyle=col+'44';ctx.fillRect(-sz/3,-sz-sz/2,sz*0.66,sz/2);
+  ctx.strokeStyle=col;ctx.strokeRect(-sz/3,-sz-sz/2,sz*0.66,sz/2);
+  ctx.fillStyle=col;ctx.fillRect(-sz/4,-sz-sz*0.35,sz/2,sz/4);
+  const leg=(Math.sin(G.frame*0.3))*3;
+  ctx.fillStyle=col+'66';
+  ctx.fillRect(-sz/2,sz/2+1,sz/3,sz/2+leg);
+  ctx.fillRect(sz/6,sz/2+1,sz/3,sz/2-leg);
+}
+function drawTanque(ctx,col,sz){
+  ctx.fillStyle='#1a0a0a';
+  roundRect(ctx,-sz,-sz/2+2,sz*0.4,sz-4,2);ctx.fill();
+  ctx.strokeStyle=col+'88';ctx.lineWidth=0.8;
+  roundRect(ctx,-sz,-sz/2+2,sz*0.4,sz-4,2);ctx.stroke();
+  roundRect(ctx,sz*0.6,-sz/2+2,sz*0.4,sz-4,2);ctx.fill();
+  roundRect(ctx,sz*0.6,-sz/2+2,sz*0.4,sz-4,2);ctx.stroke();
+  ctx.fillStyle='#200808';roundRect(ctx,-sz*0.55,-sz/2,sz*1.1,sz,3);ctx.fill();
+  ctx.strokeStyle=col;ctx.lineWidth=1.5;roundRect(ctx,-sz*0.55,-sz/2,sz*1.1,sz,3);ctx.stroke();
+  ctx.fillStyle='#300808';roundRect(ctx,-sz/4,-sz/3,sz/2,sz*0.6,2);ctx.fill();
+  ctx.strokeStyle=col;ctx.lineWidth=1;roundRect(ctx,-sz/4,-sz/3,sz/2,sz*0.6,2);ctx.stroke();
+  ctx.fillStyle=col+'88';ctx.fillRect(sz/4,-3,sz/2+2,6);
+  ctx.strokeStyle=col;ctx.lineWidth=1;ctx.strokeRect(sz/4,-3,sz/2+2,6);
+  ctx.fillStyle=col;ctx.beginPath();ctx.arc(0,0,3,0,Math.PI*2);ctx.fill();
+}
+function drawFantasma(ctx,col,sz){
+  const wave=Math.sin(G.frame*0.08)*2;
+  ctx.fillStyle=col+'55';
+  ctx.beginPath();ctx.moveTo(-sz,0);
+  ctx.quadraticCurveTo(-sz,-sz*1.5,0,-sz*1.5+wave);
+  ctx.quadraticCurveTo(sz,-sz*1.5,sz,0);
+  ctx.quadraticCurveTo(sz*0.66,sz*0.5,sz/3,sz*0.3+wave);
+  ctx.quadraticCurveTo(0,sz*0.6,-sz/3,sz*0.3+wave);
+  ctx.quadraticCurveTo(-sz*0.66,sz*0.5,-sz,0);
+  ctx.closePath();ctx.fill();
+  ctx.strokeStyle=col+'aa';ctx.lineWidth=1;ctx.stroke();
+  ctx.fillStyle='#00ffff';
+  ctx.beginPath();ctx.arc(-sz/3,-sz/2,2.5,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(sz/3,-sz/2,2.5,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle=col+'22';ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(0,-sz/4,sz*0.9,0,Math.PI*2);ctx.stroke();
+}
+function drawJefeCorp(ctx,col,sz){
+  const pulse=0.8+Math.sin(G.frame*0.05)*0.2;
+  ctx.strokeStyle='#4488ff';ctx.lineWidth=2*pulse;ctx.globalAlpha=0.5;
+  hex(ctx,0,0,sz+6);ctx.stroke();ctx.globalAlpha=1;
+  ctx.fillStyle='#1a0010';hex(ctx,0,0,sz);ctx.fill();
+  ctx.strokeStyle=col;ctx.lineWidth=2;hex(ctx,0,0,sz);ctx.stroke();
+  ctx.fillStyle=col+'33';roundRect(ctx,-sz/2,-sz/3,sz,sz*0.66,2);ctx.fill();
+  ctx.strokeStyle=col+'88';ctx.lineWidth=1;roundRect(ctx,-sz/2,-sz/3,sz,sz*0.66,2);ctx.stroke();
+  ctx.strokeStyle=col;ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(-4,-4);ctx.lineTo(4,4);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(4,-4);ctx.lineTo(-4,4);ctx.stroke();
+  ctx.fillStyle='#ff0044';ctx.shadowBlur=8;ctx.shadowColor='#ff0044';
+  ctx.beginPath();ctx.arc(-5,-sz/3,3,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(5,-sz/3,3,0,Math.PI*2);ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.fillStyle='#300020';
+  ctx.fillRect(-sz-4,-4,8,8);ctx.fillRect(sz-4,-4,8,8);
+  ctx.strokeStyle=col;ctx.lineWidth=1;
+  ctx.strokeRect(-sz-4,-4,8,8);ctx.strokeRect(sz-4,-4,8,8);
+}
+
+// ═══════════════════════════════════════════════════════════
+// HELPERS GEOMÉTRICOS
+// ═══════════════════════════════════════════════════════════
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
+}
+function hex(ctx,x,y,r){
+  ctx.beginPath();
+  for(let i=0;i<6;i++){const a=Math.PI/3*i-Math.PI/6;i===0?ctx.moveTo(x+r*Math.cos(a),y+r*Math.sin(a)):ctx.lineTo(x+r*Math.cos(a),y+r*Math.sin(a))}
+  ctx.closePath();
+}
+function octagon(ctx,x,y,r){
+  ctx.beginPath();
+  for(let i=0;i<8;i++){const a=Math.PI/4*i;i===0?ctx.moveTo(x+r*Math.cos(a),y+r*Math.sin(a)):ctx.lineTo(x+r*Math.cos(a),y+r*Math.sin(a))}
+  ctx.closePath();
+}
+
+function pathPos(t){
+  const PATH=CURRENT_LEVEL.path;
+  if(t>=PATH.length-1)return null;
+  const i=Math.floor(t),fr=t-i;
+  const[c1,r1]=PATH[i],[c2,r2]=PATH[i+1]||PATH[i];
+  return{x:(c1+(c2-c1)*fr)*40+20,y:(r1+(r2-r1)*fr)*40+20};
+}
+
+// ═══════════════════════════════════════════════════════════
+// DIBUJO DE FONDOS POR NIVEL
+// ═══════════════════════════════════════════════════════════
+function drawBgCity(){
+  // Nivel 1 — Ciudad cyberpunk exterior, cielo nocturno con edificios
+  ctx.fillStyle='#03060e';ctx.fillRect(0,0,700,440);
+
+  // Estrellas
+  if(!drawBgCity._stars){
+    drawBgCity._stars=[];
+    for(let i=0;i<60;i++) drawBgCity._stars.push({x:Math.random()*700,y:Math.random()*180,r:Math.random()*1.2+0.3,twinkle:Math.random()*60|0});
+  }
+  drawBgCity._stars.forEach(s=>{
+    const alpha=0.4+0.4*Math.sin((G.frame+s.twinkle)*0.05);
+    ctx.fillStyle=`rgba(180,210,255,${alpha})`;
+    ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
+  });
+
+  // Luna / satélite corporativo
+  ctx.fillStyle='#0a1828';ctx.beginPath();ctx.arc(620,50,22,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#1a3a5c';ctx.lineWidth=1;ctx.beginPath();ctx.arc(620,50,22,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle='#4488aa';ctx.font='9px Share Tech Mono';ctx.textAlign='center';ctx.fillText('OMNI',620,47);ctx.fillText('SAT',620,57);
+
+  // Edificios de fondo — nivel 1 exterior ciudad
+  const bldgs=[
+    {x:0,y:240,w:45,h:200,win:true},{x:40,y:200,w:65,h:240,win:true},
+    {x:100,y:220,w:40,h:220,win:true},{x:135,y:170,w:60,h:270,win:true},
+    {x:190,y:230,w:45,h:210,win:true},{x:230,y:190,w:75,h:250,win:true},
+    {x:300,y:215,w:50,h:225,win:true},{x:345,y:175,w:65,h:265,win:true},
+    {x:405,y:235,w:40,h:205,win:true},{x:440,y:195,w:70,h:245,win:true},
+    {x:505,y:220,w:45,h:220,win:true},{x:545,y:185,w:60,h:255,win:true},
+    {x:600,y:210,w:50,h:230,win:true},{x:645,y:180,w:55,h:260,win:true}
+  ];
+  bldgs.forEach(b=>{
+    // Silueta
+    ctx.fillStyle='#060c18';ctx.fillRect(b.x,b.y,b.w,b.h);
+    // Ventanas
+    for(let wy=b.y+10;wy<Math.min(b.y+b.h-10,440);wy+=14){
+      for(let wx=b.x+5;wx<b.x+b.w-5;wx+=11){
+        const lit=(G.frame+wx*7+wy*3)%80<55;
+        ctx.fillStyle=lit?'#0d2540':'#090d18';
+        ctx.fillRect(wx,wy,6,8);
+        if(lit&&Math.random()<0.02){ctx.fillStyle='#00d4ff44';ctx.fillRect(wx,wy,6,8)}
+      }
+    }
+    // Borde luminoso superior
+    ctx.fillStyle='#0a2440';ctx.fillRect(b.x,b.y,b.w,2);
+    // Antenas / logos
+    if(b.w>55){
+      ctx.strokeStyle='#ff244444';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(b.x+b.w/2,b.y);ctx.lineTo(b.x+b.w/2,b.y-15);ctx.stroke();
+      const bc=G.frame%120<60?'#ff2244':'#ff224400';
+      ctx.fillStyle=bc;ctx.beginPath();ctx.arc(b.x+b.w/2,b.y-16,2,0,Math.PI*2);ctx.fill();
+    }
+  });
+
+  // Niebla de suelo
+  for(let i=0;i<8;i++){
+    ctx.fillStyle=`rgba(0,20,40,${0.06*(8-i)})`;
+    ctx.fillRect(0,240+i*12,700,12);
+  }
+
+  // Línea de horizonte luminosa
+  const hGrad=ctx.createLinearGradient(0,238,0,242);
+  hGrad.addColorStop(0,'transparent');
+  hGrad.addColorStop(0.5,'#0a2a4a');
+  hGrad.addColorStop(1,'transparent');
+  ctx.fillStyle=hGrad;ctx.fillRect(0,238,700,4);
+}
+
+function drawBgCorp(){
+  // Nivel 2 — Interior corporativo: suelo de baldosas, paredes rojas, ambiente opresivo
+  ctx.fillStyle='#080008';ctx.fillRect(0,0,700,440);
+
+  // Patrón de suelo tipo baldosas hexagonales (interior del edificio)
+  const hw=24,hh=14;
+  for(let row=0;row<Math.ceil(440/hh)+1;row++){
+    for(let col=0;col<Math.ceil(700/hw)+1;col++){
+      const ox2=row%2===0?0:hw/2;
+      const hx=col*hw+ox2,hy=row*hh;
+      const dist=Math.sqrt((hx-350)**2+(hy-220)**2);
+      const bright=Math.max(0,0.06-dist*0.00005);
+      ctx.strokeStyle=`rgba(120,0,40,${bright+0.02})`;ctx.lineWidth=0.5;
+      hex(ctx,hx,hy,hh*0.7);ctx.stroke();
+    }
+  }
+
+  // Paredes laterales — paneles corporativos
+  // Pared izquierda
+  ctx.fillStyle='#0e0008';ctx.fillRect(0,0,60,440);
+  for(let i=0;i<8;i++){
+    ctx.fillStyle=i%2===0?'#110010':'#0d0008';
+    ctx.fillRect(8,i*60,44,55);
+    ctx.strokeStyle='#3a0020';ctx.lineWidth=0.5;ctx.strokeRect(8,i*60,44,55);
+    // Logo OmniCorp en las paredes
+    ctx.fillStyle='#ff004420';ctx.font='8px Share Tech Mono';
+    ctx.textAlign='center';ctx.fillText('OC',30,i*60+30);
+  }
+  // Pared derecha
+  ctx.fillStyle='#0e0008';ctx.fillRect(640,0,60,440);
+  for(let i=0;i<8;i++){
+    ctx.fillStyle=i%2===0?'#110010':'#0d0008';
+    ctx.fillRect(648,i*60,44,55);
+    ctx.strokeStyle='#3a0020';ctx.lineWidth=0.5;ctx.strokeRect(648,i*60,44,55);
+    ctx.fillStyle='#ff004420';ctx.font='8px Share Tech Mono';
+    ctx.textAlign='center';ctx.fillText('OC',670,i*60+30);
+  }
+
+  // Techo con luces de neón rojo
+  ctx.fillStyle='#0a0005';ctx.fillRect(0,0,700,30);
+  // Tubos de luz
+  for(let lx=80;lx<700;lx+=120){
+    const pulse=0.5+0.5*Math.sin((G.frame+lx)*0.03);
+    ctx.strokeStyle=`rgba(200,0,60,${0.3*pulse})`;ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(lx,8);ctx.lineTo(lx+80,8);ctx.stroke();
+    ctx.strokeStyle=`rgba(255,0,80,${0.15*pulse})`;ctx.lineWidth=8;
+    ctx.beginPath();ctx.moveTo(lx,8);ctx.lineTo(lx+80,8);ctx.stroke();
+  }
+
+  // Suelo (tira inferior)
+  ctx.fillStyle='#0a0005';ctx.fillRect(0,420,700,20);
+  for(let gx=0;gx<700;gx+=40){
+    ctx.strokeStyle='#3a0020';ctx.lineWidth=0.5;
+    ctx.beginPath();ctx.moveTo(gx,420);ctx.lineTo(gx,440);ctx.stroke();
+  }
+
+  // Pilares centrales decorativos
+  [180,350,520].forEach(px=>{
+    ctx.fillStyle='#120008';ctx.fillRect(px-8,0,16,440);
+    ctx.strokeStyle='#4a0025';ctx.lineWidth=1;ctx.strokeRect(px-8,0,16,440);
+    // Luz en el pilar
+    const p2=0.4+0.4*Math.sin(G.frame*0.04+px);
+    ctx.fillStyle=`rgba(255,0,60,${p2*0.15})`;ctx.fillRect(px-4,0,8,440);
+  });
+
+  // Monitores en paredes mostrando datos
+  [120,300,480,640].forEach(mx=>{
+    if(mx>700)return;
+    ctx.fillStyle='#080010';ctx.fillRect(mx-20,40,40,25);
+    ctx.strokeStyle='#00d4ff44';ctx.lineWidth=0.5;ctx.strokeRect(mx-20,40,40,25);
+    ctx.fillStyle='#00d4ff55';ctx.font='6px Share Tech Mono';ctx.textAlign='center';
+    ctx.fillText('SYS:'+((G.frame*3+mx)%999|0).toString().padStart(3,'0'),mx,53);
+    ctx.fillText('ERR:ARIA',mx,61);
+  });
+}
+
+function drawGrid(){
+  const LV=CURRENT_LEVEL;
+  const PATH=LV.path;
+  const accent=LV.accentColor;
+
+  // Celdas
+  for(let r=0;r<LV.rows;r++){
+    for(let c=0;c<LV.cols;c++){
+      const onPath=PSET.has(r*LV.cols+c);
+      ctx.fillStyle=onPath?(LV.bgType==='corp'?'#180008':'#0c1828'):(LV.bgType==='corp'?'#0a0006':'#070c18');
+      ctx.fillRect(c*40,r*40,40,40);
+      ctx.strokeStyle=LV.bgType==='corp'?'#1a0010':'#0a1520';ctx.lineWidth=0.5;
+      ctx.strokeRect(c*40,r*40,40,40);
+    }
+  }
+
+  // Ruta con pulso de energía
+  ctx.save();
+  ctx.strokeStyle=LV.bgType==='corp'?'#3a0020':'#1a3a5c';ctx.lineWidth=3;ctx.setLineDash([6,5]);
+  ctx.beginPath();
+  PATH.forEach(([c,r],i)=>{const x=c*40+20,y=r*40+20;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
+  ctx.stroke();
+  const pulse=(G.frame%80)/80;
+  ctx.strokeStyle=`rgba(${LV.bgType==='corp'?'255,30,60':'0,212,255'},${0.5-pulse*0.5})`;
+  ctx.lineWidth=2;ctx.setLineDash([]);
+  ctx.beginPath();
+  PATH.forEach(([c,r],i)=>{const x=c*40+20,y=r*40+20;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
+  ctx.stroke();
+  ctx.restore();
+
+  // Labels inicio/fin
+  ctx.font='bold 7px Share Tech Mono';ctx.textAlign='center';
+  const[sc,sr]=PATH[0];
+  ctx.fillStyle='#00ff88';ctx.fillText('INICIO',sc*40+20,sr*40+8);
+  const[ec,er]=PATH[PATH.length-1];
+  ctx.fillStyle='#ff2244';ctx.fillText('GRID',ec*40+20,er*40+8);
+  ctx.font='15px Share Tech Mono';ctx.fillStyle='#ff2244';
+  ctx.fillText('◈',ec*40+20,er*40+26);
+}
+
+// ═══════════════════════════════════════════════════════════
+// OLEADAS POR NIVEL
+// ═══════════════════════════════════════════════════════════
+function buildWave(n,levelId){
+  const q=[],cnt=5+n*3;
+  if(levelId===0){
+    // Nivel 1: solo DronScouts y Corredores, sin boss (3 oleadas)
+    for(let i=0;i<cnt;i++){
+      if(n>=2&&i%4===3)q.push(1); // Corredor desde ola 2
+      else q.push(0);             // DronScout
+    }
+  } else {
+    // Nivel 2: todo, boss en ola 5
+    for(let i=0;i<cnt;i++){
+      if(n>=5&&i%10===9)q.push(4);
+      else if(n>=4&&i%7===6)q.push(3);
+      else if(n>=2&&i%5===4)q.push(2);
+      else if(n>=1&&i%3===1)q.push(1);
+      else q.push(0);
+    }
+    if(n>=5&&!q.includes(4))q.push(4);
+  }
+  return q;
+}
+
+function sendWave(){
+  if(G.waveActive)return;
+  const LV=CURRENT_LEVEL;
+  if(G.wave>=LV.totalWaves&&LV.id===0){
+    // Nivel 1: última oleada ya completada → victoria de nivel
+    return;
+  }
+  G.wave++;G.spawnQ=buildWave(G.wave,LV.id);G.spawnT=0;G.waveActive=true;
+  document.getElementById('bw').style.display='none';
+  log(`▶ Oleada ${G.wave}/${LV.totalWaves} — ${G.spawnQ.length} unidades`,'wa');
+}
+
+// ═══════════════════════════════════════════════════════════
+// STATS Y LOG
+// ═══════════════════════════════════════════════════════════
+function upStats(){
+  document.getElementById('s-gold').textContent=G.gold;
+  document.getElementById('s-lives').textContent=G.lives;
+  document.getElementById('s-wave').textContent=G.wave+(CURRENT_LEVEL?'/'+CURRENT_LEVEL.totalWaves:'');
+  document.getElementById('s-enemies').textContent=G.enemies.filter(e=>e.alive).length;
+  document.getElementById('s-score').textContent=G.score;
+}
+
+const LL=[];
+function log(msg,type=''){
+  LL.push({msg,type});if(LL.length>50)LL.shift();
+  const b=document.getElementById('log');
+  b.innerHTML=LL.slice(-14).map(l=>`<span class="le ${l.type}">&gt; ${l.msg}</span>`).join('');
+  b.scrollTop=b.scrollHeight;
+}
+
+// ═══════════════════════════════════════════════════════════
+// VICTORIA / DERROTA
+// ═══════════════════════════════════════════════════════════
+function levelVictory(){
+  G.running=false;
+  G.totalScore=(G.totalScore||0)+G.score;
+  const LV=CURRENT_LEVEL;
+  const isLast=LV.id===LEVELS.length-1;
+  if(LV.id+1<LEVELS.length)UNLOCKED=Math.max(UNLOCKED,LV.id+1);
+
+  const ov=document.getElementById('ov');
+  ov.innerHTML=`
+    <div class="ot" style="color:#00ff88">◈ SECTOR LIBERADO</div>
+    <div class="os">${LV.name} — MISIÓN COMPLETADA</div>
+    <div style="font-family:Orbitron;font-size:24px;color:#ffd700;text-shadow:0 0 20px #ffd700;margin:6px 0">SCORE: ${G.score}</div>
+    <div style="font-size:9px;color:#2a5a7a;margin-bottom:8px">Oleadas: ${G.wave} · Torres: ${G.towers.length} · Créditos restantes: ${G.gold}C</div>
+    ${isLast
+      ? `<div class="ostory" style="color:#00ff88;border-color:#1a5a3a">¡Neo-Cali es LIBRE! JefeCorp ha caído y la red descentralizada está a salvo. OmniCorp abandona la Operación Nodo Muerto.</div>`
+      : `<div class="ostory">Sector asegurado. El siguiente objetivo: <span class="kw">NÚCLEO CORP</span> — la Torre Central de OmniCorp.</div>`
+    }
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+      ${!isLast?`<button class="cbtn go" onclick="loadLevel(${LV.id+1})" style="width:auto;padding:9px 22px;font-size:11px;letter-spacing:2px">▶ SIGUIENTE NIVEL</button>`:''}
+      <button class="cbtn pa" onclick="restartLevel()" style="width:auto;padding:9px 22px;font-size:11px;letter-spacing:2px">↺ REJUGAR</button>
+      <button class="cbtn" onclick="goMenu()" style="width:auto;padding:9px 22px;font-size:11px;letter-spacing:2px;border-color:#1a3a5c">⬡ MENÚ</button>
+    </div>`;
+  ov.style.display='flex';
+  document.getElementById('btn-pause').style.display='none';
+  document.getElementById('btn-restart').style.display='none';
+}
+
+function gameOver(){
+  G.running=false;
+  const ov=document.getElementById('ov');
+  ov.innerHTML=`
+    <div class="ot" style="color:#ff2244">◈ GRID CAÍDO</div>
+    <div class="os">OmniCorp asimiló la red. Misión fallida.</div>
+    <div style="font-family:Orbitron;font-size:24px;color:#ff2244;margin:8px 0">SCORE: ${G.score}</div>
+    <div style="display:flex;gap:10px">
+      <button class="cbtn go" onclick="restartLevel()" style="width:auto;padding:9px 22px;font-size:11px;letter-spacing:2px">↺ REINTENTAR</button>
+      <button class="cbtn" onclick="goMenu()" style="width:auto;padding:9px 22px;font-size:11px;letter-spacing:2px;border-color:#1a3a5c">⬡ MENÚ</button>
+    </div>`;
+  ov.style.display='flex';
+  document.getElementById('btn-pause').style.display='none';
+  document.getElementById('btn-restart').style.display='none';
+}
+
+// ═══════════════════════════════════════════════════════════
+// GAME LOOP
+// ═══════════════════════════════════════════════════════════
+let loopRunning=false;
+function gameLoop(){
+  if(!G.running||G.paused)return;
+  G.frame++;
+  ctx.clearRect(0,0,700,440);
+
+  // Fondo según nivel
+  if(CURRENT_LEVEL.bgType==='city')drawBgCity();
+  else drawBgCorp();
+  drawGrid();
+
+  // Spawn
+  if(G.waveActive){
+    if(G.spawnT>0)G.spawnT--;
+    else if(G.spawnQ.length>0){G.enemies.push(new Enemy(G.spawnQ.shift()));G.spawnT=38}
+  }
+
+  G.hackOn=false;
+  G.towers.forEach(t=>t.update());
+  G.enemies.forEach(e=>{if(e.alive)e.update()});
+  G.projs.forEach(p=>{if(p.alive)p.update()});
+  G.parts.forEach(p=>p.update());
+
+  G.enemies=G.enemies.filter(e=>e.alive);
+  G.projs=G.projs.filter(p=>p.alive);
+  G.parts=G.parts.filter(p=>p.life>0);
+
+  G.towers.forEach(t=>t.render());
+  G.enemies.forEach(e=>e.render());
+  G.projs.forEach(p=>p.render());
+  G.parts.forEach(p=>p.render());
+
+  upStats();
+
+  // Fin de oleada
+  if(G.waveActive&&G.spawnQ.length===0&&G.enemies.length===0){
+    G.waveActive=false;
+    const LV=CURRENT_LEVEL;
+
+    // ¿Victoria de nivel?
+    if(G.bossWon||(LV.id===0&&G.wave>=LV.totalWaves)){
+      levelVictory();return;
+    }
+
+    if(G.wave<LV.totalWaves){
+      document.getElementById('bw').style.display='block';
+      log(`Oleada ${G.wave} completada. Prepara la siguiente.`,'inf');
+    }
+  }
+
+  if(G.lives<=0){gameOver();return}
+  requestAnimationFrame(gameLoop);
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONTROLES
+// ═══════════════════════════════════════════════════════════
+let selTi=0;
+function sel(i){
+  selTi=i;
+  document.querySelectorAll('.tbtn').forEach((b,j)=>b.classList.toggle('sel',j===i));
+  G.sellOn=false;
+}
+function sellMode(){G.sellOn=!G.sellOn;log(G.sellOn?'Modo venta activo. Clic en torre.':'Venta cancelada.','wa')}
+
+function getCell(e){
+  const rect=canvas.getBoundingClientRect();
+  const sx=canvas.width/rect.width,sy=canvas.height/rect.height;
+  return{cx:Math.floor(((e.clientX-rect.left)*sx)/40),cy:Math.floor(((e.clientY-rect.top)*sy)/40)};
+}
+
+canvas.addEventListener('click',e=>{
+  if(!G.running||G.paused)return;
+  const{cx,cy}=getCell(e);
+  const LV=CURRENT_LEVEL;
+  if(cx<0||cx>=LV.cols||cy<0||cy>=LV.rows)return;
+  if(G.sellOn){
+    const idx=G.towers.findIndex(t=>t.col===cx&&t.row===cy);
+    if(idx>=0){
+      const t=G.towers[idx];const ref=Math.floor(t.cost*0.5);
+      G.gold+=ref;G.towers.splice(idx,1);
+      log(`${t.name} vendida +${ref}C`,'ok');
+    }
+    return;
+  }
+  const ex=G.towers.find(t=>t.col===cx&&t.row===cy);
+  if(ex){ex.upgrade();return}
+  if(PSET.has(cy*LV.cols+cx)){log('No se puede construir en la ruta','er');return}
+  const d=TD[selTi];
+  if(G.gold<d.cost){log(`Faltan ${d.cost-G.gold}C`,'er');return}
+  G.gold-=d.cost;
+  G.towers.push(new Tower(cx,cy,selTi));
+  log(`${d.name} Nv1 desplegada (${d.cost}C)`,'ok');
+  spawnP(cx*40+20,cy*40+20,d.color,4);
+});
+
+canvas.addEventListener('contextmenu',e=>{
+  e.preventDefault();
+  if(!G.running||G.paused)return;
+  const{cx,cy}=getCell(e);
+  const t=G.towers.find(t=>t.col===cx&&t.row===cy);
+  if(t)t.upgrade();
+});
+</script>
+</body>
+</html>
