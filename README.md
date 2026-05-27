@@ -23,7 +23,7 @@ Juego Tower Defense ambientado en Neo-Cali en el año 2089.
 
 ## Cómo ejecutar
 
-1. Descargar el archivo entrega1_tower_defense.html
+1. tower_defense_FINAL3.html
 2. Abrirlo en Google Chrome o Microsoft Edge
 
 También puede ejecutarse desde Visual Studio Code utilizando Live Server.
